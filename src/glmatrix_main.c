@@ -229,7 +229,7 @@ int main(void)
                 {
                     cxsigflag = 1L << broker_mp->mp_SigBit;
 
-                    screensaver_object = ICommodities->CxCustom(screensaver, 0L);
+                    screensaver_object = CxCustom(screensaver, 0L);
                     if(screensaver_object != NULL)
                     {
                         ICommodities->AttachCxObj(broker, screensaver_object);
