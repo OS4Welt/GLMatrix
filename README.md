@@ -1,2 +1,0 @@
-# GLMatrix
-GLMatrix Screen Blanker
