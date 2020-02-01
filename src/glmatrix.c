@@ -49,7 +49,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
-#include <libpng12/png.h>
+#include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 
