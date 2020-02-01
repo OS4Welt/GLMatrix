@@ -1,0 +1,7 @@
+# Changelog
+
+#djbase 01.02.2020
+fixed include path of png.h in glmatrix.c (line 52)
+removed ICommodities Pointer in glmatrix_main.c (line 232)
+#
+
