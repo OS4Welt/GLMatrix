@@ -52,6 +52,7 @@
 #include <libpng16/png.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "glmatrix.h"
 #include "yarandom.h"
