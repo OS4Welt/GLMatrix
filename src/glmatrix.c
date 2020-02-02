@@ -49,7 +49,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
-#include <png.h>
+#include <libpng16/png.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -686,7 +686,7 @@ XImage* png_to_ximage(char *png_file)
 
 		if (bit_depth < 8)
 		{
-		   	png_set_gray_1_2_4_to_8(png);
+		   	png_set_expand_gray_1_2_4_to_8(png);
 		   	bit_depth = 8;
 		}
 		else if (bit_depth > 8)
