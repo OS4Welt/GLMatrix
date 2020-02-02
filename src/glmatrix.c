@@ -812,8 +812,9 @@ static void load_textures(matrix_configuration *mp, BOOL flip_p)
 		}
 		else
 #endif
+		{
 			rpos =  0, gpos =  8, bpos = 16, apos = 24;
-
+		}
 			for (y = 0; y < xi->height; y++)
 			{
 				for (x = 0; x < xi->width; x++)
