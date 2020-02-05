@@ -21,7 +21,9 @@ struct GLMatrixPrefs* read_prefs(void)
     LONG version = 0;
     BOOL invalid_mode_id = FALSE;
 
-	struct GLMatrixPrefs *prefs = IExec->AllocVec(sizeof(struct GLMatrixPrefs), MEMF_CLEAR | MEMF_ANY);
+	struct GLMatrixPrefs *prefs = IExec->AllocVecTags(sizeof(struct GLMatrixPrefs), AVT_Type, MEMF_SHARED,
+																					AVT_ClearWithValue, 0,
+																					TAG_DONE);
 
 	if (prefs != NULL)
 	{
@@ -104,7 +106,7 @@ struct GLMatrixPrefs* read_prefs(void)
 		{
 			/* No compatible screenmode was found. The user has W3D installed
 			   but no supported graphics accelerator was found. */
-			char* message = "W3D Was unable to find a compatible screen mode";
+			const char* message = "W3D Was unable to find a compatible screen mode";
 			struct EasyStruct ok = {
 					sizeof(struct EasyStruct),
 					0,
@@ -123,7 +125,7 @@ struct GLMatrixPrefs* read_prefs(void)
     return prefs;
 }
 
-void write_prefs(struct GLMatrixPrefs *prefs, char *filename)
+void write_prefs(struct GLMatrixPrefs *prefs, const char *filename)
 {
 	struct IFFHandle *iff_handle = NULL;
 
@@ -135,7 +137,7 @@ void write_prefs(struct GLMatrixPrefs *prefs, char *filename)
         if (iff_handle != NULL)
         {
             iff_handle->iff_Stream = (ULONG)IDOS->Open(filename, MODE_NEWFILE);
-            if (iff_handle->iff_Stream != NULL)
+            if (iff_handle->iff_Stream != 0)
             {
                 IIFFParse->InitIFFasDOS(iff_handle);
                 if (IIFFParse->OpenIFF(iff_handle, IFFF_RWBITS) == 0)

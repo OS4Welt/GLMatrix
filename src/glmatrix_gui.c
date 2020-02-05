@@ -48,13 +48,13 @@ ULONG gui_window_signals = 0L;
 
 struct Window *gui_window = NULL;
 
-struct Gadget *layout = NULL;
-struct Gadget *timeout_slider = NULL, *timeout_integer = NULL;
-struct Gadget *density_slider = NULL, *density_integer = NULL;
-struct Gadget *speed_slider = NULL, *speed_integer = NULL;
-struct Gadget *encoding_chooser = NULL;
-struct Gadget *screenmode_requester = NULL;
-struct Gadget *fog_checkbox = NULL, *wave_checkbox = NULL, *rotate_checkbox = NULL, *invert_checkbox = NULL;
+Object *layout = NULL;
+Object *timeout_slider = NULL, *timeout_integer = NULL;
+Object *density_slider = NULL, *density_integer = NULL;
+Object *speed_slider = NULL, *speed_integer = NULL;
+Object *encoding_chooser = NULL;
+Object *screenmode_requester = NULL;
+Object *fog_checkbox = NULL, *wave_checkbox = NULL, *rotate_checkbox = NULL, *invert_checkbox = NULL;
 struct List *encodings_list;
 
 struct TagItem sl_2_int_map[] =
@@ -75,7 +75,7 @@ struct TagItem ica_targets[] =
     {TAG_DONE}
 };
 
-char *encodings[] = {"Matrix", "DNA", "Binary", "Hexadecimal", "decimal", NULL };
+const char *encodings[] = {"Matrix", "DNA", "Binary", "Hexadecimal", "decimal", NULL };
 
 BOOL window_open = FALSE;
 
@@ -107,11 +107,10 @@ BOOL gui_build_window(void)
     struct Node *node;
     int i;
 
-    encodings_list = (struct List *)IExec->AllocVec(sizeof(struct List), MEMF_CLEAR);
+    encodings_list = (struct List *)IExec->AllocSysObjectTags(ASOT_LIST, TAG_DONE);
 
     if (encodings_list != NULL)
     {
-        IExec->NewList(encodings_list);
         for (i = 0; i < 5; i++)
         {
 			node = (struct Node*)(IChooser->AllocChooserNode(CNA_Text, (ULONG)encodings[i], TAG_DONE));
@@ -408,10 +407,10 @@ BOOL gui_build_window(void)
 
 BOOL gui_init(void)
 {
-    IDCMP_port = IExec->CreateMsgPort();
+    IDCMP_port = IExec->AllocSysObjectTags(ASOT_PORT, TAG_DONE);
     if (IDCMP_port != NULL)
     {
-        app_port = IExec->CreateMsgPort();
+        app_port = IExec->AllocSysObjectTags(ASOT_PORT, TAG_DONE);
         if (app_port != NULL)
         {
             if (gui_build_window())
@@ -459,14 +458,14 @@ void gui_destroy(void)
     if (encodings_list != NULL)
     {
         free_chooser_list(encodings_list);
-        IExec->FreeVec(encodings_list);
+        IExec->FreeSysObject(ASOT_LIST, encodings_list);
         encodings_list = NULL;
     }
 
-    if (app_port != NULL) IExec->DeleteMsgPort(app_port);
+    if (app_port != NULL) IExec->FreeSysObject(ASOT_PORT, app_port);
     app_port = NULL;
 
-    if (IDCMP_port != NULL) IExec->DeleteMsgPort(IDCMP_port);
+    if (IDCMP_port != NULL) IExec->FreeSysObject(ASOT_PORT, IDCMP_port);
     IDCMP_port = NULL;
 }
 
@@ -476,44 +475,44 @@ void set_attr(void)
 
     tags[0].ti_Tag  = INTEGER_Number;
     tags[0].ti_Data = prefs.glm_Timeout;
-    IIntuition->SetGadgetAttrsA(timeout_integer, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)timeout_integer, gui_window, NULL, tags);
 
     tags[0].ti_Data = prefs.glm_Density;
-    IIntuition->SetGadgetAttrsA(density_integer, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)density_integer, gui_window, NULL, tags);
 
     tags[0].ti_Data = prefs.glm_Speed;
-    IIntuition->SetGadgetAttrsA(speed_integer, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)speed_integer, gui_window, NULL, tags);
 
     tags[0].ti_Tag  = SLIDER_Level;
     tags[0].ti_Data = prefs.glm_Timeout;
-    IIntuition->SetGadgetAttrsA(timeout_slider, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)timeout_slider, gui_window, NULL, tags);
 
     tags[0].ti_Data = prefs.glm_Density;
-    IIntuition->SetGadgetAttrsA(density_slider, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)density_slider, gui_window, NULL, tags);
 
     tags[0].ti_Data = prefs.glm_Speed;
-    IIntuition->SetGadgetAttrsA(speed_slider, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)speed_slider, gui_window, NULL, tags);
 
     tags[0].ti_Tag  = CHOOSER_Selected;
     tags[0].ti_Data = prefs.glm_Encoding;
-    IIntuition->SetGadgetAttrsA(encoding_chooser, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)encoding_chooser, gui_window, NULL, tags);
 
     tags[0].ti_Tag = GETSCREENMODE_DisplayID;
     tags[0].ti_Data = prefs.glm_ScreenModeID;
-    IIntuition->SetGadgetAttrsA(screenmode_requester, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)screenmode_requester, gui_window, NULL, tags);
 
     tags[0].ti_Tag  = GA_Selected;
     tags[0].ti_Data = (ULONG)prefs.glm_Fog;
-    IIntuition->SetGadgetAttrsA(fog_checkbox, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)fog_checkbox, gui_window, NULL, tags);
 
     tags[0].ti_Data = (ULONG)prefs.glm_Wave;
-    IIntuition->SetGadgetAttrsA(wave_checkbox, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)wave_checkbox, gui_window, NULL, tags);
 
     tags[0].ti_Data = (ULONG)prefs.glm_Rotate;
-    IIntuition->SetGadgetAttrsA(rotate_checkbox, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)rotate_checkbox, gui_window, NULL, tags);
 
     tags[0].ti_Data = (ULONG)prefs.glm_Invert;
-    IIntuition->SetGadgetAttrsA(invert_checkbox, gui_window, NULL, tags);
+    IIntuition->SetGadgetAttrsA((struct Gadget *)invert_checkbox, gui_window, NULL, tags);
 }
 
 void gui_open(void)

@@ -49,7 +49,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <math.h>
-#include <libpng16/png.h>
+#include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -114,6 +114,12 @@ static unsigned char char_map[256] = {
 
 #define CURSOR_GLYPH 97
 
+#define MODE_MATRIX 0
+#define MODE_DNA 1
+#define MODE_BIN 2
+#define MODE_HEX 3
+#define MODE_DEC 4
+
 /*#define DEBUG*/
 
 static struct { GLfloat x, y; } nice_views[] = {
@@ -154,50 +160,9 @@ static BOOL do_fog = TRUE;
 static BOOL do_waves = TRUE;
 static BOOL do_rotate = TRUE;
 static BOOL do_texture = TRUE;
-static char *mode_str = "matrix";
 
-#ifndef STAND_ALONE
 extern int width;
 extern int height;
-#else
-int width = 640;
-int height = 480;
-#endif
-
-/*
-static XrmOptionDescRec opts[] = {
-  { "-speed",       ".speed",     XrmoptionSepArg, 0 },
-  { "-density",     ".density",   XrmoptionSepArg, 0 },
-  { "-mode",        ".mode",      XrmoptionSepArg, 0 },
-  { "-binary",      ".mode",      XrmoptionNoArg, "binary"      },
-  { "-hexadecimal", ".mode",      XrmoptionNoArg, "hexadecimal" },
-  { "-decimal",     ".mode",      XrmoptionNoArg, "decimal"     },
-  { "-dna",         ".mode",      XrmoptionNoArg, "dna"         },
-  { "-fog",         ".fog",       XrmoptionNoArg, "True"  },
-  { "+fog",         ".fog",       XrmoptionNoArg, "FALSE" },
-  { "-waves",       ".waves",     XrmoptionNoArg, "True"  },
-  { "+waves",       ".waves",     XrmoptionNoArg, "FALSE" },
-  { "-rotate",      ".rotate",    XrmoptionNoArg, "True"  },
-  { "+rotate",      ".rotate",    XrmoptionNoArg, "FALSE" },
-  {"-texture",      ".texture",   XrmoptionNoArg, "True"  },
-  {"+texture",      ".texture",   XrmoptionNoArg, "FALSE" },
-};
-*/
-
-/*
-static argtype vars[] = {
-  {(caddr_t *) &mode_str,   "mode",       "Mode",    DEF_MODE,      t_String},
-  {(caddr_t *) &speed,      "speed",      "Speed",   DEF_SPEED,     t_Float},
-  {(caddr_t *) &density,    "density",    "Density", DEF_DENSITY,   t_Float},
-  {(caddr_t *) &do_fog,     "fog",        "Fog",     DEF_FOG,       t_Bool},
-  {(caddr_t *) &do_waves,   "waves",      "Waves",   DEF_WAVES,     t_Bool},
-  {(caddr_t *) &do_rotate,  "rotate",     "Rotate",  DEF_ROTATE,    t_Bool},
-  {(caddr_t *) &do_texture, "texture",    "Texture", DEF_TEXTURE,   t_Bool},
-};
-
-
-ModeSpecOpt matrix_opts = {countof(opts), opts, countof(vars), vars, NULL};
-*/
 
 /* Re-randomize the state of one strip.
  */
@@ -649,7 +614,7 @@ void XDestroyImage(XImage *xi)
 	free(xi);
 }
 
-XImage* png_to_ximage(char *png_file)
+XImage* png_to_ximage(const char *png_file)
 {
 	png_structp png;
 	png_infop startinfo;
@@ -895,7 +860,6 @@ void init_matrix()
 	mp->button_down_p = FALSE;
 
 
-#ifndef STAND_ALONE
     speed = (GLfloat)glmatrix_prefs->glm_Speed / 100.0f;
     density =(GLfloat) glmatrix_prefs->glm_Density;
     do_fog = glmatrix_prefs->glm_Fog;
@@ -904,64 +868,35 @@ void init_matrix()
 
     switch (glmatrix_prefs->glm_Encoding)
     {
-        case 0:
-            mode_str = "matrix";
+        case MODE_MATRIX:
+            flip_p = 1;
+			mp->glyph_map = matrix_encoding;
+			mp->nglyphs   = countof(matrix_encoding);
             break;
-        case 1:
-            mode_str = "dna";
+        case MODE_DNA:
+            flip_p = 0;
+			mp->glyph_map = dna_encoding;
+			mp->nglyphs   = countof(dna_encoding);
             break;
-        case 2:
-            mode_str = "bin";
+        case MODE_BIN:
+            flip_p = 0;
+			mp->glyph_map = binary_encoding;
+			mp->nglyphs   = countof(binary_encoding);
             break;
-        case 3:
-            mode_str = "hex";
+        case MODE_HEX:
+            flip_p = 0;
+			mp->glyph_map = hex_encoding;
+			mp->nglyphs   = countof(hex_encoding);
             break;
-        case 4:
-            mode_str = "dec";
+        case MODE_DEC:
+            flip_p = 0;
+			mp->glyph_map = decimal_encoding;
+			mp->nglyphs   = countof(decimal_encoding);
+            break;
+        default:
+            exit(1);
             break;
     }
-#endif
-
-	if (!mode_str || !*mode_str || !strcasecmp(mode_str, "matrix"))
-	{
-		flip_p = 1;
-		mp->glyph_map = matrix_encoding;
-		mp->nglyphs   = countof(matrix_encoding);
-	}
-	else if (!strcasecmp (mode_str, "dna"))
-	{
-		flip_p = 0;
-		mp->glyph_map = dna_encoding;
-		mp->nglyphs   = countof(dna_encoding);
-	}
-	else if (!strcasecmp (mode_str, "bin") ||
-			!strcasecmp (mode_str, "binary"))
-	{
-		flip_p = 0;
-		mp->glyph_map = binary_encoding;
-		mp->nglyphs   = countof(binary_encoding);
-	}
-	else if (!strcasecmp (mode_str, "hex") ||
-			!strcasecmp (mode_str, "hexadecimal"))
-	{
-		flip_p = 0;
-		mp->glyph_map = hex_encoding;
-		mp->nglyphs   = countof(hex_encoding);
-	}
-	else if (!strcasecmp (mode_str, "dec") ||
-			!strcasecmp (mode_str, "decimal"))
-	{
-		flip_p = 0;
-		mp->glyph_map = decimal_encoding;
-		mp->nglyphs   = countof(decimal_encoding);
-	}
-	else
-	{
-		fprintf (stderr,
-				"%s: `mode' must be matrix, dna, binary, or hex: not `%s'\n",
-				progname, mode_str);
-		exit (1);
-	}
 
 	reshape_matrix(width, height);
 

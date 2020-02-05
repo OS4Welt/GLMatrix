@@ -201,7 +201,7 @@ int main(void)
     {
 		if (!screenblanker_init())
 		{
-			char* message = "MiniGL failed to initialize\nGLMatrix requiers Warp3D and a compatible graphics accelerator";
+			const char* message = "MiniGL failed to initialize\nGLMatrix requiers Warp3D and a compatible graphics accelerator";
 			struct EasyStruct ok = {
 					sizeof(struct EasyStruct),
 					0,
@@ -220,7 +220,7 @@ int main(void)
             csignal = IExec->AllocSignal(-1L);
             csigflag = 1L << csignal;
 
-            broker_mp = IExec->CreateMsgPort();
+            broker_mp = IExec->AllocSysObjectTags(ASOT_PORT, TAG_DONE);
             if (broker_mp != NULL)
             {
                 newbroker.nb_Port = broker_mp;
@@ -251,7 +251,7 @@ int main(void)
                     }
                 }
 
-                IExec->DeletePort(broker_mp);
+                IExec->FreeSysObject(ASOT_PORT, broker_mp);
             }
             IExec->FreeSignal(csignal);
         }
